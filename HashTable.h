@@ -8,7 +8,7 @@
 #include "Dict.h"
 #include "TableEntry.h"
 
-#include "ListLinked.h"
+#include "../../Pr1/PRA_2324_P1/ListLinked.h"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ template <typename V>
 class HashTable: public Dict<V> {
 
     private:
-        int n;
+	int n;
 	int max;
 	ListLinked<TableEntry<V>>* table;
 
@@ -35,54 +35,58 @@ class HashTable: public Dict<V> {
 
 
     public:
-	void insert(std::string key, V value) override {
-		int index = h(key);  
-		// Verificar si la clave ya existe en la cubeta
-   	 	Node<TableEntry<V>>* aux = table[index].getHead();
-    		while (aux) {
-        		if (aux-> data.key == key) {
-            			throw std::runtime_error("Clave ya existe en el diccionario");
-        		}
-			aux = aux -> next;
-    		}
+	void insert(string key, V value) override {
+		int Key_value = h(key);
 
-    		// La clave no existe, insertar el par key->value en la cubeta
-    		aux.TableEntry(key, value);
-    		n++;  // Incrementar el contador de elementos
+		TableEntry<V> valor(key, value);
+
+		if (table[Key_value].search(valor) == -1){
+                throw runtime_error("Clave no encontrada en el diccionario");
+		}
+
+		table[Key_value].prepend(valor);
+
+		n++;
 	}
 
-	V search(std::string key) override {
-		int index = h(key);  
-                Node<TableEntry<V>>* aux = table[index].getHead();
-                while (aux) {
-                        if (aux-> data.key == key) {
-				return aux -> data.value;
-                        }
-                        aux = aux -> next;
-                }
-                throw std::runtime_error("Clave no encontrada en el diccionario");
+	V search(string key) override {
+		int Key_value = h(key);
+
+		TableEntry<V> valor(key);
+
+		if (table[Key_value].search(valor) == -1){
+                throw runtime_error("Clave no encontrada en el diccionario");
+		}
+
+		int Pos_Key = table[Key_value].search(valor);
+
+		TableEntry<V> result = table[Key_value].get(Pos_Key);
+
+		return result.value;
 	}
 
-	V remove(std::string key) override {
-		int index = h(key);
-                Node<TableEntry<V>>* aux = table[index].getHead();
-                while (aux) {
-                        if (aux-> data.key == key) {
-                                while(aux != nullptr){
-					Node<TableEntry<V>>* t = aux -> next;
-					delete aux;
-					aux = t;
-				}
-                        }
-                        aux = aux -> next;
-                }
+	V remove(string key) override {
+		int Key_value = h(key);
+
+		TableEntry<V> valor(key);
+
+		if (table[Key_value].search(valor) == -1){
+                throw runtime_error("Clave no encontrada en el diccionario");
+		}
+		n--;
+
+		int Pos_Key = table[Key_value].search(valor);
+
+		TableEntry<V> result = table[Key_value].remove(Pos_Key);
+
+		return result.value;
 	}
 
 	int entries() override{
 		return n;
 	}
 
-        HashTable(int size){
+	HashTable(int size){
 		n = 0;
 		max = size;
 		table = new ListLinked<TableEntry<V>>[size];
@@ -96,34 +100,34 @@ class HashTable: public Dict<V> {
 		return max;
 	}
 
-	friend std::ostream& operator<<(std::ostream &out, const HashTable<V> &th){
+	friend ostream& operator<<(ostream &out, const HashTable<V> &th){
+
+		out << "===================================" << endl;
+		out << "HashTable [entries: " << th.n << ", capacity: " << th.max << "]" << endl;
+		out << "===================================" << endl << endl;
+
 		for (int i = 0; i < th.max; ++i) {
-        		out << "Cubeta " << i << ": ";
-        		Node<TableEntry<V>>* aux = th.table[i].getHead();
-        		while (aux) {
-            			out << aux -> data << " ";
-            			aux = aux -> next;
-        		}
-			out << std::endl;
+			out << "== Cubeta " << i << "==" << endl;
+			out << th.table[i] << endl << endl;
     		}
 		return out;
 	}
 
-	V operator[](std::string key){
-		int index = h(key);  // Obtener la posición (cubeta) en la tabla hash
-		// Buscar la clave en la lista de la cubeta correspondiente
-		Node<TableEntry<V>>* aux = table[index].getHead();
-		while (aux) {
-        		if (aux -> data == key) {
-            			// La clave fue encontrada, devolver el valor asociado
-            			return aux -> data.value;
-        		}
-        		aux = aux -> next;
-    		}
-		// Si la clave no fue encontrada, lanzar una excepción
-    		throw std::runtime_error("Clave no encontrada en el diccionario");
+	V operator[](string key){
+
+		int Key_value = h(key);
+
+		TableEntry<V> value(key);
+
+		if (table[Key_value].search(value) == -1){
+                throw runtime_error("Clave no encontrada en el diccionario");
+		}
+
+		int Pos_Key = table[Key_value].search(value);
+
+		TableEntry<V> result = table[Key_value].get(Pos_Key);
+		return result.value;
 	}
-        
 };
 
 #endif
